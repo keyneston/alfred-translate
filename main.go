@@ -9,6 +9,7 @@ import (
 
 	translate "cloud.google.com/go/translate/apiv3"
 	aw "github.com/deanishe/awgo"
+	"golang.org/x/text/language"
 	translatepb "google.golang.org/genproto/googleapis/cloud/translate/v3"
 )
 
@@ -18,9 +19,14 @@ const (
 	envWorkflowData    = "alfred_workflow_data"
 	envWorkflowVersion = "alfred_workflow_version"
 	envAlfredVersion   = "alfred_version"
+
+	googleCredentials = "GOOGLE_APPLICATION_CREDENTIALS" // hack until I get settings working
+	googleProjectID   = "GOOGLE_PROJECT_ID"              // hack until I get settings working
 )
 
 var defaultSettings = map[string]string{
+	googleProjectID:    "projects/celtic-defender-297312",
+	googleCredentials:  "/Users/tabitha/.google/translate.json",
 	envWorkflowID:      "com.keyneston.translate",
 	envWorkflowCache:   filepath.Join(os.TempDir(), "alfred_cache"),
 	envWorkflowData:    filepath.Join(os.TempDir(), "alfred_data"),
@@ -47,26 +53,45 @@ func (w *Workflow) Run() {
 
 // Your workflow starts here
 func (w *Workflow) run() {
+	ctx := context.Background()
 	if len(os.Args) < 2 {
 		return
 	}
 
-	client, err := translate.NewTranslationClient(context.Background())
+	targetLanguage := "en" // hack until I get settings working
+
+	_, err := language.Parse(targetLanguage) // Make sure language code is valid
+	if err != nil {
+		w.Fatalf("language.Parse: %v", err)
+	}
+
+	client, err := translate.NewTranslationClient(ctx)
 	if err != nil {
 		w.Fatalf("error creating translate client: %v", err)
 	}
+	defer client.Close()
 
-	result, err := client.TranslateText(context.Background(),
-		&translatepb.TranslateTextRequest{
-			Contents: os.Args[1:],
-		})
+	req := &translatepb.TranslateTextRequest{
+		// SourceLanguageCode: sourceLang.String(),
+		TargetLanguageCode: targetLanguage,
+		MimeType:           "text/plain",
+		Contents:           os.Args[1:],
+		Parent:             defaultSettings[googleProjectID],
+	}
+
+	client.TranslateText(ctx, req)
+	result, err := client.TranslateText(context.Background(), req)
 	if err != nil {
 		w.Fatalf("error getting results: %v", err)
 	}
 
 	// Do thing here!
 	for _, i := range result.Translations {
-		w.NewItem(fmt.Sprintf("%s [%s]", i.TranslatedText, i.DetectedLanguageCode))
+		result := i.TranslatedText
+		if i.DetectedLanguageCode != "" {
+			result += fmt.Sprintf(" [%s=>%s]", i.DetectedLanguageCode, targetLanguage)
+		}
+		w.NewItem(result)
 	}
 	w.SendFeedback()
 }
