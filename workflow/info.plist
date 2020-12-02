@@ -4,18 +4,55 @@
 <dict>
 	<key>bundleid</key>
 	<string>com.keyneston.translate</string>
+	<key>category</key>
+	<string>Tools</string>
 	<key>connections</key>
-	<dict/>
+	<dict>
+		<key>670C6459-1897-4F77-BFC8-9809A497F865</key>
+		<array/>
+		<key>88D533B5-149A-4D25-9DCF-DB87B7275B06</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>670C6459-1897-4F77-BFC8-9809A497F865</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+		</array>
+	</dict>
 	<key>createdby</key>
 	<string>Tabitha Rollins</string>
 	<key>description</key>
-	<string></string>
+	<string>Translate Text</string>
 	<key>disabled</key>
 	<false/>
 	<key>name</key>
 	<string>Tabs Translate</string>
 	<key>objects</key>
 	<array>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>autopaste</key>
+				<false/>
+				<key>clipboardtext</key>
+				<string>{var:translation}</string>
+				<key>ignoredynamicplaceholders</key>
+				<false/>
+				<key>transient</key>
+				<false/>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.output.clipboard</string>
+			<key>uid</key>
+			<string>670C6459-1897-4F77-BFC8-9809A497F865</string>
+			<key>version</key>
+			<integer>3</integer>
+		</dict>
 		<dict>
 			<key>config</key>
 			<dict>
@@ -34,7 +71,7 @@
 				<key>keyword</key>
 				<string>tr</string>
 				<key>queuedelaycustom</key>
-				<integer>3</integer>
+				<integer>5</integer>
 				<key>queuedelayimmediatelyinitially</key>
 				<true/>
 				<key>queuedelaymode</key>
@@ -42,7 +79,7 @@
 				<key>queuemode</key>
 				<integer>2</integer>
 				<key>runningsubtext</key>
-				<string></string>
+				<string>Calling Translate API</string>
 				<key>script</key>
 				<string></string>
 				<key>scriptargtype</key>
@@ -50,9 +87,9 @@
 				<key>scriptfile</key>
 				<string>alfred-translate</string>
 				<key>subtext</key>
-				<string></string>
+				<string>Translate {query}</string>
 				<key>title</key>
-				<string></string>
+				<string>Translate text</string>
 				<key>type</key>
 				<integer>8</integer>
 				<key>withspace</key>
@@ -67,18 +104,40 @@
 		</dict>
 	</array>
 	<key>readme</key>
-	<string></string>
+	<string># How to Setup
+
+????
+
+# Credits
+
+- Icons made by https://www.flaticon.com/authors/freepik</string>
 	<key>uidata</key>
 	<dict>
+		<key>670C6459-1897-4F77-BFC8-9809A497F865</key>
+		<dict>
+			<key>xpos</key>
+			<integer>655</integer>
+			<key>ypos</key>
+			<integer>170</integer>
+		</dict>
 		<key>88D533B5-149A-4D25-9DCF-DB87B7275B06</key>
 		<dict>
 			<key>xpos</key>
-			<integer>180</integer>
+			<integer>115</integer>
 			<key>ypos</key>
-			<integer>95</integer>
+			<integer>170</integer>
 		</dict>
 	</dict>
+	<key>variables</key>
+	<dict>
+		<key>default_target_language</key>
+		<string>en</string>
+		<key>google_project_id</key>
+		<string>celtic-defender-297312</string>
+	</dict>
+	<key>version</key>
+	<string>0.0.1</string>
 	<key>webaddress</key>
-	<string></string>
+	<string>https://github.com/keyneston/alfred-translation</string>
 </dict>
 </plist>

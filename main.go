@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"path"
 	"path/filepath"
 
 	translate "cloud.google.com/go/translate/apiv3"
@@ -21,11 +22,15 @@ const (
 	envAlfredVersion   = "alfred_version"
 
 	googleCredentials = "GOOGLE_APPLICATION_CREDENTIALS" // hack until I get settings working
-	googleProjectID   = "GOOGLE_PROJECT_ID"              // hack until I get settings working
+)
+
+// config keys
+const (
+	KeyDefaultTargetLanguage = "default_target_language"
+	KeyGoogleProjectID       = "google_project_id"
 )
 
 var defaultSettings = map[string]string{
-	googleProjectID:    "projects/celtic-defender-297312",
 	googleCredentials:  "/Users/tabitha/.google/translate.json",
 	envWorkflowID:      "com.keyneston.translate",
 	envWorkflowCache:   filepath.Join(os.TempDir(), "alfred_cache"),
@@ -46,6 +51,10 @@ type Workflow struct {
 	*aw.Workflow
 }
 
+func (w Workflow) GetProjectID() string {
+	return path.Join("projects", w.Config.GetString(KeyGoogleProjectID))
+}
+
 // Run wraps the underlying aw.Workflow.Run
 func (w *Workflow) Run() {
 	w.Workflow.Run(w.run)
@@ -58,11 +67,11 @@ func (w *Workflow) run() {
 		return
 	}
 
-	targetLanguage := "en" // hack until I get settings working
+	targetLanguage := w.Config.GetString(KeyDefaultTargetLanguage, "en")
 
 	_, err := language.Parse(targetLanguage) // Make sure language code is valid
 	if err != nil {
-		w.Fatalf("language.Parse: %v", err)
+		w.Fatalf("error validating language %q: %v", targetLanguage, err)
 	}
 
 	client, err := translate.NewTranslationClient(ctx)
@@ -76,7 +85,7 @@ func (w *Workflow) run() {
 		TargetLanguageCode: targetLanguage,
 		MimeType:           "text/plain",
 		Contents:           os.Args[1:],
-		Parent:             defaultSettings[googleProjectID],
+		Parent:             w.GetProjectID(),
 	}
 
 	client.TranslateText(ctx, req)
@@ -88,10 +97,14 @@ func (w *Workflow) run() {
 	// Do thing here!
 	for _, i := range result.Translations {
 		result := i.TranslatedText
+		item := w.NewItem(result)
 		if i.DetectedLanguageCode != "" {
-			result += fmt.Sprintf(" [%s=>%s]", i.DetectedLanguageCode, targetLanguage)
+			item.Subtitle(fmt.Sprintf("[%s=>%s]", i.DetectedLanguageCode, targetLanguage))
 		}
-		w.NewItem(result)
+		item.Copytext(i.TranslatedText)
+		item.Var("translation", i.TranslatedText)
+		item.Valid(true)
+		item.Arg(i.TranslatedText)
 	}
 	w.SendFeedback()
 }
