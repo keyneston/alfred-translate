@@ -1,6 +1,6 @@
 .PHONY:
 link: build
-	alfred link
+	go run github.com/jason0x43/go-alfred/alfred link
 
 .PHONY:
 build: $(shell find . -type f -name '*.go')
